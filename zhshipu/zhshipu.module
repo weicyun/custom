@@ -72,4 +72,8 @@ function zhshipu_form_submit($form, &$form_state){
 	drupal_set_message(t('Your note has been saved.'));
 
 }
+
+function for_github(){
+	//no content.
+}
 ?>
