@@ -1,0 +1,49 @@
+<?php
+function zhshipu_install(){
+	drupal_install_schema('zhshipu');
+}
+
+function zhshipu_uninstall(){
+	drupal_uninstall_schema('zhshipu');
+	variable_del('zhshipu_setform');
+}
+
+function zhshipu_schema(){
+	$schema['zhshipu_notes'] = array(
+			'description' => 'This table for node\'s note',
+			'fields' => array(
+				   'nid' => array( 
+	                   'type' => 'int', 
+	                   'unsigned' => TRUE, 
+	                   'not null' => TRUE, 
+	                   'default' => 0, 
+	                   'description' => t('The {node}.nid to which the annotation applies.'), 
+	               	), 
+	               'uid' => array( 
+	                   'type' => 'int', 
+	                   'unsigned' => TRUE, 
+	                   'not null' => TRUE, 
+	                   'default' => 0, 
+	                   'description' => t('The {user}.uid of the user who created the annotation.')
+	                ),
+		            'note' => array( 
+	                   'description' => t('The text of the annotation.'), 
+	                   'type' => 'text', 
+	                   'not null' => TRUE, 
+	                   'size' => 'big' 
+	               ), 
+		           'created' => array( 
+		                'description' => t('A Unix timestamp indicating when the annotation 
+		                      was created.'), 
+		                'type' => 'int', 
+		                'not null' => TRUE, 
+		                'default' => 0 
+		            ), 
+	          	), 
+			'primary key' => array( 
+			               'nid', 'uid' 
+			          	), 
+		);
+	return $schema;
+}
+?>

@@ -1,0 +1,75 @@
+<?php
+function zhshipu_node_view($nodes){
+	//debug($nodes->nid);
+	global $user;
+	$able_note_type = variable_get('zhshipu_setform');
+	$node_type 		= $nodes->type;
+	if($user->uid != 0 &&  (boolean)$able_note_type[$node_type] != FALSE){
+		$nodes->content['zhshipuform'] = array(
+				'value' => drupal_get_form('zhshipu_form', $nodes),
+			);
+		
+	}
+	
+}
+
+function zhshipu_menu(){
+	$items['admin/zhshipu/admin'] = array(
+			'title' => 'zhshipu module settings',
+			'description' => 'zhshipu setting page',
+			'page callback' => 'drupal_get_form',
+			'page arguments' => array('zhshipu_set_form'),
+			'access arguments' => array('administrator user'),
+			'#type' => MENU_NORMAL_ITEM,
+		);
+	return $items;
+}
+
+function zhshipu_set_form(){
+	$form['zhshipu_setform'] = array(
+			'#type' => 'checkboxes',
+			'#title' => 'choose a type',
+			'#options' => node_type_get_names(),
+			'#default_value' => variable_get('zhshipu_setform',array('article')),
+		);
+	//debug(variable_get('zhshipu_setform'));
+	return system_settings_form($form) ;
+}
+
+function zhshipu_form($node, &$form_state, $nodes){
+	global $user;
+	$result = db_query('SELECT * from {zhshipu_notes} WHERE nid = :nid AND uid = :uid',array(':nid' => $nodes->nid, ':uid' => $user->uid) );
+	//debug($result->fetchColumn(2)) ;
+	$form['zhshipuform'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('zhshipuform'),
+		);
+	$form['zhshipuform']['note'] = array(
+			'#type' => 'textarea',
+			'#title' => t('note'),
+			'#description' =>t('this is a test form for zhshipu.'),
+			'#default_value' => $result->fetchColumn(2),
+		);
+	$form['zhshipuform']['nid'] = array(
+			'#type' => 'hidden',
+			'#value' => $nodes->nid,
+		);
+	$form['zhshipuform']['submit'] = array(
+			'#type' => 'submit',
+			'#value' => t('save'),
+		);
+	return $form;
+
+}
+
+function zhshipu_form_submit($form, &$form_state){
+	global $user;
+	$note = $form_state['input']['note'];
+	$nid = $form_state['input']['nid'];
+	debug($form_state['input']['nid']);
+	db_query('DELETE from {zhshipu_notes} WHERE nid = :nid AND uid = :uid',array(':nid' => $nid, ':uid' => $user->uid) );
+	db_query("INSERT INTO {zhshipu_notes} (nid, uid,note, created) VALUES (:nid, :uid, :note, :created)", array(':nid' => $nid, ':uid' => $user->uid , ':note' => $note, ':created' => time()));
+	drupal_set_message(t('Your note has been saved.'));
+
+}
+?>
